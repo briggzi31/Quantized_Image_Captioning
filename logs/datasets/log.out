@@ -2,6 +2,4 @@ current conda environment:
 /gscratch/scrubbed/briggs3/miniconda3/envs/qlora_blip2
 
 Running dataset_creator.sh...
-args.input /gscratch/scrubbed/data/flickr8k
-None
 Finished dataset_creator.sh!

@@ -1,0 +1,4 @@
+  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/dataset_creator.py", line 30
+    pickle.dump(, out, protocol=pickle.HIGHEST_PROTOCOL)
+                ^
+SyntaxError: invalid syntax
