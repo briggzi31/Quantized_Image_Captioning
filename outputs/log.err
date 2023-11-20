@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/mmfs1/home/briggs3/cse493/src/blip2_finetune.py", line 42, in <module>
-    logging_config(args)
-  File "/mmfs1/home/briggs3/cse493/src/blip2_finetune.py", line 16, in logging_config
-    logging.basicConfig(
-  File "/gscratch/scrubbed/briggs3/qlora_blip2/lib/python3.10/logging/__init__.py", line 2062, in basicConfig
