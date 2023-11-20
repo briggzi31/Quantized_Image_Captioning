@@ -35,6 +35,7 @@ nvidia-nvtx-cu12==12.1.105
 packaging==23.2
 pandas==2.1.3
 peft @ git+https://github.com/huggingface/peft.git@f1ecfa6ae6eba599ae89decbf47b339d8c9d39a3
+Pillow==10.1.0
 psutil==5.9.6
 pyarrow==14.0.1
 pyarrow-hotfix==0.5
@@ -44,12 +45,13 @@ PyYAML==6.0.1
 regex==2023.10.3
 requests==2.31.0
 safetensors==0.4.0
+scipy==1.11.4
 six==1.16.0
 sympy==1.12
 tokenizers==0.15.0
 torch==2.1.1
 tqdm==4.66.1
-transformers @ git+https://github.com/huggingface/transformers.git@25b0f2033ba23e354ef2f665764248fcbb3f49ba
+transformers @ git+https://github.com/huggingface/transformers.git@dc68a39c8111217683bf49a4912d0c9018bab33d
 triton==2.1.0
 typing_extensions==4.8.0
 tzdata==2023.3

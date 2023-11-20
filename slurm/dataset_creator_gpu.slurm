@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ## Job Name and User Config
-#SBATCH --job-name=blip2_finetune
+#SBATCH --job-name=dataset_creator
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=briggs3@uw.edu
 
-
-## Parition and Allocation 
-#SBATCH -p compute  # specify partition
+## Parition and Allocation
+##SBATCH -p gpu-2080ti  # specify partition
+#SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 
 ## Resources
@@ -16,13 +16,13 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
-
+#SBATCH --gpus=1  
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=./logs/log.out # where STDOUT goes
-#SBATCH --error=./logs/log.err # where STDERR goes
+#SBATCH --output=./logs/datasets/log.out # where STDOUT goes
+#SBATCH --error=./logs/datasets/log.err # where STDERR goes
 
 
 ## Command(s) to run:
-./scripts/blip2_finetune.sh
+./scripts/dataset_creator.sh

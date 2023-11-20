@@ -1,7 +1,0 @@
-
-EnvironmentLocationNotFound: Not a conda environment: /gscratch/scrubbed/briggs3/qlora_blip2
-
-  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/blip2_finetune.py", line 15
-    logging.info("Configuring 4bit double quantization")
-    ^
-IndentationError: expected an indented block after function definition on line 12

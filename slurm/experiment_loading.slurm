@@ -20,8 +20,8 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=./outputs/log.out # where STDOUT goes
-#SBATCH --error=./outputs/log.err # where STDERR goes
+#SBATCH --output=./logs/log.out # where STDOUT goes
+#SBATCH --error=./logs/log.err # where STDERR goes
 
 
 ## Command(s) to run:

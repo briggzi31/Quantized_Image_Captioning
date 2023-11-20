@@ -1,0 +1,5 @@
+2023-11-19 17:39:53,560 | INFO | "dataset_creator.py::line-65 | Current Configuration args: Namespace(log_file='logs/datasets/log.log', input_dir='/gscratch/scrubbed/briggs3/data/flickr8k', output_dir='/gscratch/scrubbed/briggs3/data/flickr8k/datasets', cache_dir='/gscratch/scrubbed/briggs3/.cache')
+2023-11-19 17:39:53,566 | DEBUG | "connectionpool.py::line-1052 | Starting new HTTPS connection (1): s3.amazonaws.com:443
+2023-11-19 17:39:53,907 | DEBUG | "connectionpool.py::line-546 | https://s3.amazonaws.com:443 "HEAD /datasets.huggingface.co/datasets/datasets/imagefolder/imagefolder.py HTTP/1.1" 404 0
+2023-11-19 17:39:54,719 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-44ea288911f65817/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5.incomplete/imagefolder-train-00000-00000-of-NNNNN.arrow
+2023-11-19 17:39:54,809 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-44ea288911f65817/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5.incomplete/dataset_info.json
