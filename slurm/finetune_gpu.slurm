@@ -6,8 +6,8 @@
 #SBATCH --mail-user=briggs3@uw.edu
 
 ## Parition and Allocation
-##SBATCH -p gpu-2080ti  # specify partition
-#SBATCH -p ckpt
+#SBATCH -p gpu-2080ti  # specify partition
+##SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 
 ## Resources
@@ -20,9 +20,9 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=./logs/log.out # where STDOUT goes
-#SBATCH --error=./logs/log.err # where STDERR goes
+#SBATCH --output=logs/finetune_2/log.out # where STDOUT goes
+#SBATCH --error=logs/finetune_2/log.err # where STDERR goes
 
 
 ## Command(s) to run:
-./scripts/blip2_finetune.sh
+./scripts/finetune.sh

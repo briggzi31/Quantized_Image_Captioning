@@ -1,5 +1,5 @@
 current conda environment: 
-/gscratch/scrubbed/briggs3/miniconda3/envs/qlora_blip2
+/gscratch/scrubbed/briggs3/conda_envs/qlora_blip2
 
 Running dataset_creator.sh...
 Finished dataset_creator.sh!
