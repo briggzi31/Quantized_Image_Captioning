@@ -3,10 +3,10 @@
 ## Job Name and User Config
 #SBATCH --job-name=blip2_finetune
 #SBATCH --mail-type=ALL
-##SBATCH --mail-user=briggs3@uw.edu
+#SBATCH --mail-user=briggs3@uw.edu
 
 ## Parition and Allocation
-##SBATCH -p gpu-2080ti  # specify partition
+## SBATCH -p gpu-2080ti  # specify partition
 #SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 
@@ -20,8 +20,8 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=logs/finetune_2/log.out # where STDOUT goes
-#SBATCH --error=logs/finetune_2/log.err # where STDERR goes
+#SBATCH --output=logs/finetune/log.out # where STDOUT goes
+#SBATCH --error=logs/finetune/log.err # where STDERR goes
 
 
 ## Command(s) to run:

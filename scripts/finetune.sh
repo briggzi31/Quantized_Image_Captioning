@@ -15,4 +15,5 @@ python src/finetune_model.py \
     --model-id Salesforce/blip2-opt-2.7b \
     --cache-dir /gscratch/scrubbed/briggs3/.cache/ \
     --data_path /mmfs1/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl \
-    --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints
+    --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints \
+    --num_epochs 1
