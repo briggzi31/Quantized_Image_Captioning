@@ -6,8 +6,8 @@
 #SBATCH --mail-user=irisz1@uw.edu
 
 ## Parition and Allocation
-#SBATCH -p gpu-2080ti  # specify partition
-##SBATCH -p ckpt
+##SBATCH -p gpu-2080ti  # specify partition
+#SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 
 ## Resources
