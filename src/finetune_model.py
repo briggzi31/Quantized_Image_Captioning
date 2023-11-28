@@ -68,7 +68,11 @@ def train_model(
         model=model,
         train_dataset=data["train"],
         args=training_args,
-        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
+        data_collator=DataCollatorForLanguageModeling(processor.tokenizer, mlm=False),
+
+    ### We need data['train']['labels'] = decoder_input_ids
+    ### We need data['train']['pixel_values'] = processor(images=item["image"], padding="max_length", return_tensors="pt")
+
     )
     logging.info("Successfully configured Trainer!")
 
@@ -180,6 +184,11 @@ def logging_config(args: argparse.Namespace) -> None:
     :param args: The command line argument kwargs
     :return: None
     """
+    head, tail = os.path.split(args.log_file)
+
+    if not os.path.isdir(head):
+        os.makedirs(head)
+
     fmt = '%(asctime)s | %(levelname)s | "%(filename)s::line-%(lineno)d | %(message)s'
     logging.basicConfig(
         filename=args.log_file, 
@@ -237,7 +246,6 @@ def main():
         args.resume_training = False
 
     train_model(args, model, processor, data)
-
 
     print("processor", processor)
     print("model", model)

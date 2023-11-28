@@ -12,7 +12,7 @@ echo ""
 echo "running python script"
 python src/finetune_model.py \
     --log-file logs/finetune/log.log \
-    --model-id "Salesforce/blip2-opt-2.7b" \
-    --cache-dir "/gscratch/scrubbed/briggs3/.cache/" \
-    --data_path "/mmfs1/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl" \
-    --checkpoint_dir "/gscratch/scrubbed/briggs3/model_checkpoints"
+    --model-id Salesforce/blip2-opt-2.7b \
+    --cache-dir /gscratch/scrubbed/briggs3/.cache/ \
+    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl \
+    --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints
