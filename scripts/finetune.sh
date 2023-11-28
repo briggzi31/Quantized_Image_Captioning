@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # activate conda env
-source /mmfs1/home/briggs3/miniconda3/bin/activate /gscratch/scrubbed/briggs3/conda_envs/qlora_blip2
+# source /mmfs1/home/briggs3/miniconda3/bin/activate /gscratch/scrubbed/briggs3/conda_envs/qlora_blip2
+source /mmfs1/home/irisz1/miniconda3/bin/activate /gscratch/scrubbed/briggs3/conda_envs/qlora_blip2
 
 echo "current conda environment: "
 echo $CONDA_PREFIX
