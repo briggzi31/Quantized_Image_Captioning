@@ -1,3 +1,10 @@
+"""
+dataset_creator
+
+This module will load in a directory full of images and corresponding captions into a HuggingFace
+    image datasets.DatasetDict object
+"""
+
 import argparse
 import logging
 import os
@@ -180,4 +187,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

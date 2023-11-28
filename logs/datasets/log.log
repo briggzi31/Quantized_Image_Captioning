@@ -1,13 +1,12 @@
-2023-11-19 20:01:38,301 | INFO | "dataset_creator.py::line-162 | Current Configuration args: Namespace(log_file='logs/datasets/log.log', image_input_dir='/gscratch/scrubbed/briggs3/data/flickr8k/images', caption_input_file='/gscratch/scrubbed/briggs3/data/flickr8k/captions.txt', output_file='/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl', cache_dir='/gscratch/scrubbed/briggs3/.cache', train_test_split=0.2, overwrite_file=True, random_seed=10)
-2023-11-19 20:01:38,411 | INFO | "dataset_creator.py::line-104 | Writing to metadata.jsonl file to /gscratch/scrubbed/briggs3/data/flickr8k/images/metadata.jsonl!
-2023-11-19 20:01:38,514 | INFO | "dataset_creator.py::line-76 | Loading data into HuggingFace Datasets object!
-2023-11-19 20:01:38,516 | DEBUG | "connectionpool.py::line-1052 | Starting new HTTPS connection (1): s3.amazonaws.com:443
-2023-11-19 20:01:38,857 | DEBUG | "connectionpool.py::line-546 | https://s3.amazonaws.com:443 "HEAD /datasets.huggingface.co/datasets/datasets/imagefolder/imagefolder.py HTTP/1.1" 404 0
-2023-11-19 20:01:39,544 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5.incomplete/imagefolder-train-00000-00000-of-NNNNN.arrow
-2023-11-19 20:01:39,738 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5.incomplete/dataset_info.json
-2023-11-19 20:01:39,755 | INFO | "dataset_creator.py::line-49 | Performing train-test-val split!
-2023-11-19 20:01:39,758 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5/tmpgmpkd3j7
-2023-11-19 20:01:39,767 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5/tmpfbznrko2
-2023-11-19 20:01:39,776 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5/tmpof46_lgf
-2023-11-19 20:01:39,785 | DEBUG | "local.py::line-294 | open file: /mmfs1/home/briggs3/.cache/huggingface/datasets/imagefolder/default-037934321746ba20/0.0.0/7b7ce5247a942be131d49ad4f3de5866083399a0f250901bd8dc202f8c5f7ce5/tmpt7ekscyg
-2023-11-19 20:01:39,800 | INFO | "dataset_creator.py::line-30 | Pickling to /gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl
+2023-11-21 13:43:07,911 | INFO | "finetune_model.py::line-139 | Device Type: gpu
+2023-11-21 13:43:07,913 | INFO | "finetune_model.py::line-184 | Current Configuration args: Namespace(log_file='logs/datasets/log.log', model_id='Salesforce/blip2-opt-2.7b', cache_dir='/gscratch/scrubbed/briggs3/.cache/', data_path='/mmfs1/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl', device='gpu')
+2023-11-21 13:43:07,916 | INFO | "finetune_model.py::line-186 | Quantizing Pre-trained model...
+2023-11-21 13:43:07,922 | DEBUG | "connectionpool.py::line-1052 | Starting new HTTPS connection (1): huggingface.co:443
+2023-11-21 13:43:11,262 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/preprocessor_config.json HTTP/1.1" 200 0
+2023-11-21 13:43:11,356 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/preprocessor_config.json HTTP/1.1" 200 0
+2023-11-21 13:43:11,529 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/preprocessor_config.json HTTP/1.1" 200 0
+2023-11-21 13:43:11,673 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+2023-11-21 13:43:12,442 | INFO | "finetune_model.py::line-78 | Configuring 4bit double quantization
+2023-11-21 13:43:12,594 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/config.json HTTP/1.1" 200 0
+2023-11-21 13:43:12,675 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/config.json HTTP/1.1" 200 0
+2023-11-21 13:45:08,301 | DEBUG | "connectionpool.py::line-546 | https://huggingface.co:443 "HEAD /Salesforce/blip2-opt-2.7b/resolve/main/generation_config.json HTTP/1.1" 404 0
