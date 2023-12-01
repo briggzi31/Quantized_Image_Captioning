@@ -100,29 +100,76 @@ from image_dataset import ImageCaptioningDataset
 def train_model(
     args: argparse.Namespace, 
     model: Blip2ForConditionalGeneration, 
-    data: Dict[Dataset]
+    processor: Blip2Processor, 
+    data: ImageCaptioningDataset
 ) -> None:
     """
     This will train the model
 
     :param args: The arguments passed in from the console
     :param model: The pre-trained model 
+    :param processor: The pre-trained processor containing a tokenizer and vision encoder
     :param data: The data in train, val, test split
+
+    outputs/
+        epoch1/
+            chekcpoint20/
+            checkpoint50/
+        epoch2/.
+            ..
+        ...
+        epoch_n-1/
+            checkpoint80
+            
+        epochn/
+            checkpoint100/
+
+
+    outputs/
+        checkpoint_1_20
+        checkpoint_1_40
+        checkpoint_2_60
+        checkpoint_2_80
+        checkpoint_3_100
+
     """
-    train_dataloader = DataLoader(data['train'], shuffle=True, batch_size=2)
 
-    optimizer = AdamW(model.paramaters(), lr=5e-5)
+    # bos = processor.tokenizer.bos_token
+    train_dataloader = DataLoader(data, shuffle=True, batch_size=2, collate_fn=ImageCaptioningDataset.collate_fn)
+    print("train_dataloader", train_dataloader)
+    print("type train_dataloader", type(train_dataloader))
+
+
+    iter_loader = iter(train_dataloader)
+    batch1 = next(iter_loader)
+    print("batch1", batch1)
+
+    optimizer = AdamW(model.parameters(), lr=5e-5)
+
     model.train()
-
     for i in range(args.num_epochs):
         for idx, batch in enumerate(train_dataloader):
+            print("\nHERERER")
+            print("batch", batch)
+            print("len batch", len(batch))
+
             captions = batch.pop('labels').to(args.device)
             pixel_values = batch.pop('pixel_values').to(args.device)
 
             outputs = model(
+                # input_ids=captions,
                 pixel_values=pixel_values, 
-                labels=input_ids
+                labels=captions
             )
+
+            loss = outputs.loss
+
+            print("Loss:", loss.item())
+
+            loss.backward()
+
+            optimizer.step()
+            optimizer.zero_grad()
 
 
 
@@ -159,7 +206,7 @@ def quantize_model(
     model_double_quant.gradient_checkpointing_enable()
     model_double_quant = prepare_model_for_kbit_training(model_double_quant)
 
-    print("model_double_quant\n", model_double_quant)
+    # print("model_double_quant\n", model_double_quant)
 
     qlora_config = LoraConfig(
         r=8, 
@@ -198,17 +245,21 @@ def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[Datas
     with open(args.data_path, "rb") as f:
         data = pickle.load(f)
 
+    print("pre-loaded data", data)
+
     train_data = ImageCaptioningDataset(data['train'], processor)
     val_data = ImageCaptioningDataset(data['val'], processor)
     test_data = ImageCaptioningDataset(data['test'], processor)
 
-    print(train_data[0])
-    
-    print("pre-loaded data", data)
-
     # data = data.map(lambda samples: processor.tokenizer(samples["text"]), batched=True)
 
+    # dataset = DatasetDict()
+    # dataset['train'] = Dataset.from_dict(train_data)
+    # dataset['val'] = Dataset.from_dict(val_data)
+    # dataset['test'] = Dataset.from_dict(test_data)
+
     return {'train': train_data, 'val': val_data, 'test': test_data}
+    # return dataset
 
 
 def gpu_config(args: argparse.Namespace) -> None:
@@ -276,13 +327,18 @@ def main():
     model, processor = quantize_model(args)
     logging.info("Successfully quantized Pre-trained model!")
 
+    print("peft model", model)
+    print("peft processor", processor)
+
+
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args, processor)
     logging.info("Sucessfully loaded data!")
+    print("train data\n", data["train"])
+    print("val data\n", data["val"])
+    print("test data\n", data["test"])
 
     train_data = data['train']
-    print("train_data", train_data)
-    print("train_data[0]", train_data[0])
 
     args.current_checkpoint_dir = get_last_checkpoint(args.checkpoint_dir)
 
@@ -290,10 +346,10 @@ def main():
     if args.current_checkpoint_dir is None:
         args.resume_training = False
 
-    train_model(args, model, processor, data)
+    train_model(args, model, processor, train_data)
 
-    print("processor", processor)
-    print("model", model)
+    # print("processor", processor)
+    # print("model", model)
 
     logging.info("Finished!!")
 
