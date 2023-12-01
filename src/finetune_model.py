@@ -8,7 +8,8 @@ import pickle
 import torch
 
 from torch.optim import (
-    AdamW
+    AdamW,
+    Adam
 )
 
 from torch.utils.data import (
@@ -133,33 +134,26 @@ def train_model(
         checkpoint_3_100
 
     """
+    train_dataloader = DataLoader(data, shuffle=True, batch_size=2, collate_fn=data.collate_fn)
 
-    # bos = processor.tokenizer.bos_token
-    train_dataloader = DataLoader(data, shuffle=True, batch_size=2, collate_fn=ImageCaptioningDataset.collate_fn)
-    print("train_dataloader", train_dataloader)
-    print("type train_dataloader", type(train_dataloader))
-
-
-    iter_loader = iter(train_dataloader)
-    batch1 = next(iter_loader)
-    print("batch1", batch1)
+    # iter_loader = iter(train_dataloader)
+    # batch1 = next(iter_loader)
+    # print("batch1", batch1)
 
     optimizer = AdamW(model.parameters(), lr=5e-5)
 
     model.train()
     for i in range(args.num_epochs):
+        print("Epoch:", i + 1)
         for idx, batch in enumerate(train_dataloader):
-            print("\nHERERER")
-            print("batch", batch)
-            print("len batch", len(batch))
 
             captions = batch.pop('labels').to(args.device)
-            pixel_values = batch.pop('pixel_values').to(args.device)
+            pixel_values = batch.pop('pixel_values').to(args.device, torch.float16)
 
             outputs = model(
                 # input_ids=captions,
                 pixel_values=pixel_values, 
-                labels=captions
+                decoder_input_ids=captions
             )
 
             loss = outputs.loss
@@ -170,7 +164,6 @@ def train_model(
 
             optimizer.step()
             optimizer.zero_grad()
-
 
 
 def quantize_model(
@@ -200,7 +193,8 @@ def quantize_model(
     model_double_quant = Blip2ForConditionalGeneration.from_pretrained(
         args.model_id, 
         quantization_config=nf4_config, 
-        cache_dir=args.cache_dir
+        cache_dir=args.cache_dir,
+        device_map='auto'
     )
 
     model_double_quant.gradient_checkpointing_enable()
@@ -214,15 +208,13 @@ def quantize_model(
         target_modules=["q_proj", "k_proj"],   # only change last language model queries and keys
         lora_dropout=0.05, 
         bias="none",
-        task_type="CAUSAL_LM"
+        # task_type="CAUSAL_LM"
     )
 
     model = get_peft_model(model_double_quant, qlora_config)
 
     model.to(args.device)
 
-    logging.info(f"{get_trainable_parameters(model)}")
- 
     return model, processor
 
 
@@ -329,7 +321,9 @@ def main():
 
     print("peft model", model)
     print("peft processor", processor)
+    print(f"{get_trainable_parameters(model)}")
 
+    logging.info(f"{get_trainable_parameters(model)}")
 
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args, processor)
