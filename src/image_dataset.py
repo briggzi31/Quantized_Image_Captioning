@@ -43,7 +43,12 @@ class ImageCaptioningDataset(Dataset):
                 text_inputs = self.processor.tokenizer(
                     [x["text"] for x in batch], padding=True, return_tensors="pt"
                 )
+                
                 processed_batch['labels'] = text_inputs['input_ids']
                 processed_batch['attention_mask'] = text_inputs['attention_mask']
+
+        bos = self.processor.tokenizer.bos_token
+        bos_list = [bos for _ in range(len(batch))]
+        processed_batch['bos'] = self.processor.tokenizer(bos_list, padding=False, return_tensors="pt")["input_ids"]
 
         return processed_batch

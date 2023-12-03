@@ -138,8 +138,8 @@ def get_args() -> argparse.Namespace:
     :return: The command line argument kwargs
     """
     parser = argparse.ArgumentParser(
-        prog="Blip2_FineTuning",
-        description="This will fine tune Quantized (on QLora) Blip2 on MedICaT",
+        prog="Dataset Creator",
+        description="This will create a HuggingFace Image Captioning Datasets object for MedICaT",
     )
     
     parser.add_argument('-l', '--log-file', type=str, default="logs/datasets/log.log", required=False,
@@ -171,6 +171,21 @@ def main():
     if (not args.overwrite_file) and (os.path.exists(args.output_file)):
         raise FileExistsError(f"Output file '{args.output_file}' already exists. " 
                               "Either specify a new output_file, or use the flag --overwrite_file!")
+
+    # with open(args.caption_input_file) as f:
+    #     captions = json.load(f)
+
+    captions = pd.read_json(path_or_buf=args.caption_input_file, lines=True)
+
+    print(captions.columns)
+
+    print('subfigures', captions['subfigures'][0])
+    print('subcaptions', captions["subcaptions"][0])
+    print("tokens", captions['tokens'][0])
+    print()
+
+
+    errorhere
 
     # create metadata.jsonl file
     zip_captions(args)

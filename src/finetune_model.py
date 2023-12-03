@@ -4,6 +4,7 @@ import os
 import argparse
 import logging
 import pickle
+import yaml
 
 import torch
 
@@ -38,7 +39,7 @@ from transformers.trainer_utils import get_last_checkpoint
 
 from datasets import DatasetDict, Dataset
 
-from typing import Union
+from typing import Union, Any
     
 from image_dataset import ImageCaptioningDataset
 
@@ -102,7 +103,8 @@ def train_model(
     args: argparse.Namespace, 
     model: Blip2ForConditionalGeneration, 
     processor: Blip2Processor, 
-    data: ImageCaptioningDataset
+    data: ImageCaptioningDataset,
+    hyper_params: dict[Any]
 ) -> None:
     """
     This will train the model
@@ -134,26 +136,26 @@ def train_model(
         checkpoint_3_100
 
     """
+    # bos = processor.tokenizer.bos_token
+
     train_dataloader = DataLoader(data, shuffle=True, batch_size=2, collate_fn=data.collate_fn)
-
-    # iter_loader = iter(train_dataloader)
-    # batch1 = next(iter_loader)
-    # print("batch1", batch1)
-
     optimizer = AdamW(model.parameters(), lr=5e-5)
 
     model.train()
-    for i in range(args.num_epochs):
+    model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
+
+    for i in range(hyper_params['num_epochs']):
         print("Epoch:", i + 1)
         for idx, batch in enumerate(train_dataloader):
 
+            bos_token = batch.pop('bos').to(args.device)
             captions = batch.pop('labels').to(args.device)
             pixel_values = batch.pop('pixel_values').to(args.device, torch.float16)
 
             outputs = model(
-                # input_ids=captions,
+                input_ids=bos_token,
                 pixel_values=pixel_values, 
-                decoder_input_ids=captions
+                labels=captions
             )
 
             loss = outputs.loss
@@ -200,15 +202,12 @@ def quantize_model(
     model_double_quant.gradient_checkpointing_enable()
     model_double_quant = prepare_model_for_kbit_training(model_double_quant)
 
-    # print("model_double_quant\n", model_double_quant)
-
     qlora_config = LoraConfig(
         r=8, 
         lora_alpha=32, 
         target_modules=["q_proj", "k_proj"],   # only change last language model queries and keys
         lora_dropout=0.05, 
         bias="none",
-        # task_type="CAUSAL_LM"
     )
 
     model = get_peft_model(model_double_quant, qlora_config)
@@ -303,7 +302,8 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-cpkt', '--checkpoint_dir', type=str, default="/gscratch/scrubbed/briggs3/checkpoints", required=False)
     parser.add_argument('-d', '--data_path', type=str, 
                         default="/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl", required=False)
-    parser.add_argument('-e', '--num_epochs', type=int, default=200, required=False)
+    parser.add_argument('-hp', '--hyper_param_config', type=str, default="hyper_param_config/finetuning_config.yaml", required=True)
+    # parser.add_argument('-e', '--num_epochs', type=int, default=200, required=False)
 
     return parser.parse_args()
 
@@ -340,7 +340,10 @@ def main():
     if args.current_checkpoint_dir is None:
         args.resume_training = False
 
-    train_model(args, model, processor, train_data)
+    with open(args.hyper_param_config) as f:
+            hyper_params = yaml.safe_load(f)
+
+    train_model(args, model, processor, train_data, hyper_params)
 
     # print("processor", processor)
     # print("model", model)
