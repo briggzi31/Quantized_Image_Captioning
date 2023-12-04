@@ -226,7 +226,7 @@ def get_trainable_parameters(model: PeftModel) -> str:
     return f"trainable params: {trainable_params:,d} || all params: {all_param:,d} || trainable%: {100 * trainable_params / all_param}"
 
 
-def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[Dataset]:
+def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[str, ImageCaptioningDataset]:
     """
     This loads in the specified data from a pickle file
 

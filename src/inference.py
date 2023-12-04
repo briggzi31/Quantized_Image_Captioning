@@ -13,10 +13,10 @@ from transformers import (
     Blip2Processor
 )
 
-from image_dataset import ImageCaptioningDataset
+from datasets import DatasetDict, Dataset
 
 
-def load_data(args: argparse.Namespace):
+def load_data(args: argparse.Namespace) -> DatasetDict:
     """
     This loads in the specified data from a pickle file
 
@@ -32,7 +32,7 @@ def predict_captions(
     args: argparse.Namespace,
     model: Blip2ForConditionalGeneration,
     processor: Blip2Processor,
-    data: ImageCaptioningDataset
+    data: Dataset
     ) -> None:
     """
     This will perform inference on the given model
@@ -50,17 +50,18 @@ def predict_captions(
         inputs = processor(images=image, return_tensors="pt").to(args.device, torch.float16)
         pixel_values = inputs.pixel_values
 
-        print('x:', x)
-        print('x[image]:', image)
-        print('inputs:', inputs)
+        # print('x:', x)
+        # print('x[image]:', image)
+        # print('inputs:', inputs)
+        print('x[text]:\t\t', x["text"])
 
         # BLIP2_peft version
         generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
         generated_caption = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        print('peft caption:', generated_caption)
+        print('peft caption:\t', generated_caption)
 
         # QLORA version
-        # outputs = model_4bit.generate(**inputs, max_new_tokens=20)
+        # outputs = model.generate(**inputs, max_new_tokens=20)
         # decoded_outputs = tokenizer.decode(outputs[0], skip_special_tokens=True)
         # print('tim\'s caption:', decoded_outputs)
         break
