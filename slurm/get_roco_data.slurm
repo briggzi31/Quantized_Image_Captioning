@@ -12,10 +12,10 @@
 #SBATCH -A stf  # specify account group
 
 ## Resources
-#SBATCH --nodes=10
+#SBATCH --nodes=1
 #SBATCH --time=02:00:00  # Max runtime in DD-HH:MM:SS format.
 #SBATCH --cpus-per-task=8
-#SBATCH --ntasks=10
+#SBATCH --ntasks=1
 #SBATCH --mem=150G
 
 

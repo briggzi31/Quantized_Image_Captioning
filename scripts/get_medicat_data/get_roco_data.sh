@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo "cd /gscratch/scrubbed/briggs3/get_roco_data/roco-dataset"
-cd /gscratch/scrubbed/briggs3/get_roco_data/roco-dataset
+echo "cd /gscratch/scrubbed/briggs3/data/roco-dataset"
+cd /gscratch/scrubbed/briggs3/data/roco-dataset
 
 echo "grabbing roco data"
 

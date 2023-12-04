@@ -28,6 +28,9 @@ def save_dataset(args: argparse.Namespace, data: DatasetDict) -> None:
     :param args: Arguments passed in from the console. 
     :return: None
     """
+    if (not args.overwrite_file) and (os.path.exists(args.output_file)):
+        raise FileExistsError(f"Output file '{args.output_file}' already exists. " 
+                              "Either specify a new output_file, or use the flag --overwrite_file!")
 
     output_dir, _ = os.path.split(args.output_file) 
     if not os.path.isdir(output_dir):
@@ -98,11 +101,15 @@ def zip_captions(args) -> None:
     :param args: Arguments passed in from the console. 
     :return: None
     """
+    captions = pd.read_csv(args.caption_file, sep='\t', header=None, names=['ROCO_ID', 'text'])
+    licenses = pd.read_csv(args.licenses_file)
 
-    captions = pd.read_csv(args.caption_input_file)
-    captions.rename(columns={"image": "file_name", "caption": "text"}, inplace=True)
+    captions = pd.merge(captions, licenses, on="ROCO_ID", how="inner")
+    captions.rename(columns={"PMC_ID": "file_name"}, inplace=True)
+
+    print("captions", captions)
     
-    # create jsone
+    # create json
     json_captions = captions.to_json(orient='records')
     json_captions = json.loads(json_captions)
 
@@ -144,12 +151,10 @@ def get_args() -> argparse.Namespace:
     
     parser.add_argument('-l', '--log-file', type=str, default="logs/datasets/log.log", required=False,
         help='Path to output the log file.')
-    parser.add_argument('-i', '--image_input_dir', type=str, 
-        default="/gscratch/scrubbed/briggs3/data/flickr8k/images", required=False,
-        help='Directory where all images are kept.')
-    parser.add_argument('-c', '--caption_input_file', type=str, default="/gscratch/scrubbed/briggs3/data/flickr8k/captions.txt",
-        help='Path to the image file name to captions .txt file')
-    parser.add_argument('-o', '--output_file', type=str, default="gscratch/scrubbed/briggs3/datasets", required=False,
+    parser.add_argument('-i', '--data_dir', type=str, 
+        default="/gscratch/scrubbed/briggs3/data/all_data", required=False,
+        help='Directory where all roco data is kept.')
+    parser.add_argument('-o', '--output_dir', type=str, default="gscratch/scrubbed/briggs3/all_data/datasets", required=False,
         help='Path to output the datasets object for downstream finetuning')
     parser.add_argument('-cache', '--cache-dir', type=str, default="/gscratch/scrubbed/briggs3/.cache", required=False,
         help='Directory where to store cached pre-trained models')
@@ -168,36 +173,53 @@ def main():
     logging_config(args)
     logging.info(f"Current Configuration args: {args}")
 
-    if (not args.overwrite_file) and (os.path.exists(args.output_file)):
-        raise FileExistsError(f"Output file '{args.output_file}' already exists. " 
-                              "Either specify a new output_file, or use the flag --overwrite_file!")
+    all_data = {
+        'radiology': {},
+        'non-radiology': {}
+    }
+    
+    for split in ['train', 'test', 'validation']:
+        cur_split = split if split != 'validation' else 'val'
 
-    # with open(args.caption_input_file) as f:
-    #     captions = json.load(f)
+        for image_type in ['radiology', 'non-radiology']:
+            cur_directory = os.path.join(args.data_dir, split, image_type)
 
-    captions = pd.read_json(path_or_buf=args.caption_input_file, lines=True)
+            args.image_input_dir = os.path.join(cur_directory, "images")
+            args.caption_file = os.path.join(cur_directory, "captions.txt")
+            args.licenses_file = os.path.join(cur_directory, "licences.txt")
 
-    print(captions.columns)
+            print(args.licenses_file)
 
-    print('subfigures', captions['subfigures'][0])
-    print('subcaptions', captions["subcaptions"][0])
-    print("tokens", captions['tokens'][0])
-    print()
+            # create metadata.jsonl file
+            zip_captions(args)
 
+            # read in the dataset to a HuggingFace Dataset object
+            data: Dataset = read_in_data(args)
 
-    errorhere
+            all_data[image_type][cur_split] = data
 
-    # create metadata.jsonl file
-    zip_captions(args)
+    radiology_data = DatasetDict(all_data['radiology'])
+    non_radiology_data = DatasetDict(all_data['non-radiology'])
 
-    # read in the dataset
-    data = read_in_data(args)
-
-    # train_val_test split
-    data = perform_train_val_test_split(args, data)
 
     # pickle and save the data set 
-    save_dataset(args, data)
+    args.output_file = os.path.join(args.output_dir, "radiology_data.pkl")
+    save_dataset(args, radiology_data)
+
+    args.output_file = os.path.join(args.output_dir, "non-radiology_data.pkl")
+    save_dataset(args, non_radiology_data)
+
+    # # create metadata.jsonl file
+    # zip_captions(args)
+
+    # # read in the dataset
+    # data = read_in_data(args)
+
+    # train_val_test split
+    # data = perform_train_val_test_split(args, data)
+
+    # # pickle and save the data set 
+    # save_dataset(args, data)
 
 
 if __name__ == '__main__':

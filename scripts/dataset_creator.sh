@@ -21,10 +21,11 @@ echo "Running dataset_creator.sh..."
 
 python src/dataset_creator.py \
     --log-file logs/datasets/log.log \
-    -i /gscratch/scrubbed/briggs3/data/medicat/figures \
-    -c /gscratch/scrubbed/briggs3/data/medicat/figures/subcaptions_public.jsonl \
-    -o /gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl \
+    -i /gscratch/scrubbed/briggs3/data/roco \
+    -c /gscratch/scrubbed/briggs3/data/roco/test/radiology/captions.txt \
+    -o /gscratch/scrubbed/briggs3/data/roco/datasets \
     --cache-dir "/gscratch/scrubbed/briggs3/.cache" \
     --overwrite_file
+
 
 echo "Finished dataset_creator.sh!"
