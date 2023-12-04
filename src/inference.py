@@ -3,8 +3,9 @@ import os
 
 import argparse
 import logging
+import pickle
 
-from finetune_model import gpu_config, quantize_model, load_data, logging_config
+from finetune_model import gpu_config, quantize_model, logging_config
 import torch
 
 from transformers import (
@@ -13,6 +14,18 @@ from transformers import (
 )
 
 from image_dataset import ImageCaptioningDataset
+
+
+def load_data(args: argparse.Namespace):
+    """
+    This loads in the specified data from a pickle file
+
+    :param args: The command line argument kwargs
+    :return: The loaded data
+    """
+    with open(args.data_path, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 
 def predict_captions(
@@ -30,10 +43,16 @@ def predict_captions(
     :param data: The data to be inferred on
     """
 
-    for i, x in enumerate(dataset):
+    for i, x in enumerate(data):
+        # print('x for pred_captions:', x)
+
         image = x["image"]
         inputs = processor(images=image, return_tensors="pt").to(args.device, torch.float16)
         pixel_values = inputs.pixel_values
+
+        print('x:', x)
+        print('x[image]:', image)
+        print('inputs:', inputs)
 
         # BLIP2_peft version
         generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
@@ -41,9 +60,9 @@ def predict_captions(
         print('peft caption:', generated_caption)
 
         # QLORA version
-        outputs = model_4bit.generate(**inputs, max_new_tokens=20)
-        decoded_outputs = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        print('tim\'s caption:', decoded_outputs)
+        # outputs = model_4bit.generate(**inputs, max_new_tokens=20)
+        # decoded_outputs = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # print('tim\'s caption:', decoded_outputs)
         break
 
 
@@ -85,7 +104,7 @@ def main():
     print('processor:', processor)
 
     logging.info(f"Loading data from {args.data_path}...")
-    data = load_data(args, processor)
+    data = load_data(args)
     logging.info("Sucessfully loaded data!")
 
     test_data = data["test"]
