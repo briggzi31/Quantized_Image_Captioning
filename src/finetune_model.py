@@ -18,16 +18,16 @@ from torch.utils.data import (
 )
 
 from peft import (
-    PeftModel, 
+    PeftModel,
     LoraConfig,
-    get_peft_model, 
+    get_peft_model,
     prepare_model_for_kbit_training
 )
 
 from transformers import (
-    BitsAndBytesConfig, 
-    Blip2ForConditionalGeneration, 
-    AutoTokenizer, 
+    BitsAndBytesConfig,
+    Blip2ForConditionalGeneration,
+    AutoTokenizer,
     AutoProcessor,
     Blip2Processor,
     DataCollatorForLanguageModeling,
@@ -40,20 +40,20 @@ from transformers.trainer_utils import get_last_checkpoint
 from datasets import DatasetDict, Dataset
 
 from typing import Union, Any
-    
+
 from image_dataset import ImageCaptioningDataset
 
 # def train_model(
-#     args: argparse.Namespace, 
-#     model: Blip2ForConditionalGeneration, 
-#     processor: Blip2Processor, 
+#     args: argparse.Namespace,
+#     model: Blip2ForConditionalGeneration,
+#     processor: Blip2Processor,
 #     data: DatasetDict
 # ) -> None:
 #     """
 #     This will train the model
 
 #     :param args: The arguments passed in from the console
-#     :param model: The pre-trained model 
+#     :param model: The pre-trained model
 #     :param processor: The pre-trained processor containing a tokenizer and vision encoder
 #     :param data: The data in train, val, test split
 #     """
@@ -100,9 +100,9 @@ from image_dataset import ImageCaptioningDataset
 
 
 def train_model(
-    args: argparse.Namespace, 
-    model: Blip2ForConditionalGeneration, 
-    processor: Blip2Processor, 
+    args: argparse.Namespace,
+    model: Blip2ForConditionalGeneration,
+    processor: Blip2Processor,
     data: ImageCaptioningDataset,
     hyper_params: dict[Any]
 ) -> None:
@@ -110,7 +110,7 @@ def train_model(
     This will train the model
 
     :param args: The arguments passed in from the console
-    :param model: The pre-trained model 
+    :param model: The pre-trained model
     :param processor: The pre-trained processor containing a tokenizer and vision encoder
     :param data: The data in train, val, test split
 
@@ -123,7 +123,7 @@ def train_model(
         ...
         epoch_n-1/
             checkpoint80
-            
+
         epochn/
             checkpoint100/
 
@@ -154,7 +154,7 @@ def train_model(
 
             outputs = model(
                 input_ids=bos_token,
-                pixel_values=pixel_values, 
+                pixel_values=pixel_values,
                 labels=captions
             )
 
@@ -172,7 +172,7 @@ def quantize_model(
     args: argparse.Namespace
 ) -> tuple[Blip2ForConditionalGeneration, Blip2Processor]:
     """
-    This loads in the pretrained weights and double quantizes the weights for the 
+    This loads in the pretrained weights and double quantizes the weights for the
         model specified in args.
 
     :param args: The arguments passed in from the console
@@ -193,8 +193,8 @@ def quantize_model(
     )
 
     model_double_quant = Blip2ForConditionalGeneration.from_pretrained(
-        args.model_id, 
-        quantization_config=nf4_config, 
+        args.model_id,
+        quantization_config=nf4_config,
         cache_dir=args.cache_dir,
         device_map='auto'
     )
@@ -203,10 +203,10 @@ def quantize_model(
     model_double_quant = prepare_model_for_kbit_training(model_double_quant)
 
     qlora_config = LoraConfig(
-        r=8, 
-        lora_alpha=32, 
+        r=8,
+        lora_alpha=32,
         target_modules=["q_proj", "k_proj"],   # only change last language model queries and keys
-        lora_dropout=0.05, 
+        lora_dropout=0.05,
         bias="none",
     )
 
@@ -229,7 +229,7 @@ def get_trainable_parameters(model: PeftModel) -> str:
 def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[Dataset]:
     """
     This loads in the specified data from a pickle file
-    
+
     :param args: The command line argument kwargs
     :return: The loaded data
     """
@@ -267,7 +267,7 @@ def gpu_config(args: argparse.Namespace) -> None:
 def logging_config(args: argparse.Namespace) -> None:
     """
     This sets up the logger for log files
-    
+
     :param args: The command line argument kwargs
     :return: None
     """
@@ -278,7 +278,7 @@ def logging_config(args: argparse.Namespace) -> None:
 
     fmt = '%(asctime)s | %(levelname)s | "%(filename)s::line-%(lineno)d | %(message)s'
     logging.basicConfig(
-        filename=args.log_file, 
+        filename=args.log_file,
         filemode='w',
         level=logging.DEBUG,
         format=fmt,
@@ -295,12 +295,12 @@ def get_args() -> argparse.Namespace:
         prog="Blip2_FineTuning",
         description="This will fine tune Quantized (on QLora) Blip2 on MedICaT",
     )
-    
+
     parser.add_argument('-l', '--log-file', type=str, default="logs/finetune/log.log", required=False)
     parser.add_argument('-m', '--model-id', type=str, default="Salesforce/blip2-opt-2.7b", required=False)
     parser.add_argument('-c', '--cache-dir', type=str, default="/gscratch/scrubbed/briggs3/.cache/", required=False)
     parser.add_argument('-cpkt', '--checkpoint_dir', type=str, default="/gscratch/scrubbed/briggs3/checkpoints", required=False)
-    parser.add_argument('-d', '--data_path', type=str, 
+    parser.add_argument('-d', '--data_path', type=str,
                         default="/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl", required=False)
     parser.add_argument('-hp', '--hyper_param_config', type=str, default="hyper_param_config/finetuning_config.yaml", required=True)
     # parser.add_argument('-e', '--num_epochs', type=int, default=200, required=False)

@@ -1,15 +1,15 @@
 #!/bin/bash
 
 ## Job Name and User Config
-#SBATCH --job-name=blip2_finetune
+#SBATCH --job-name=blip2_inference
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=irisz1@uw.edu
 ## SBATCH --mail-user=briggs3@uw.edu
 
 
 ## Parition and Allocation
-# # SBATCH -p gpu-2080ti  # specify partition
-#SBATCH -p ckpt
+#SBATCH -p gpu-2080ti  # specify partition
+## SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 
 ## Resources
@@ -22,9 +22,9 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=logs/finetune2/log.out # where STDOUT goes
-#SBATCH --error=logs/finetune2/log.err # where STDERR goes
+#SBATCH --output=logs/inference/log.out # where STDOUT goes
+#SBATCH --error=logs/inference/log.err # where STDERR goes
 
 
 ## Command(s) to run:
-./scripts/finetune.sh
+./scripts/inference.sh
