@@ -1,5 +1,8 @@
-Resolving data files:   0%|          | 0/909 [00:00<?, ?it/s]Resolving data files: 100%|██████████| 909/909 [00:00<00:00, 402472.54it/s]
-Downloading data files:   0%|          | 0/909 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 909/909 [00:00<00:00, 80540.42it/s]
-Downloading data files: 0it [00:00, ?it/s]Downloading data files: 0it [00:00, ?it/s]
-Extracting data files: 0it [00:00, ?it/s]Extracting data files: 0it [00:00, ?it/s]
-Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 1 examples [00:00,  2.76 examples/s]Generating train split: 908 examples [00:00, 1903.45 examples/s]
+Traceback (most recent call last):
+  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 219, in <module>
+    main()
+  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 199, in main
+    zip_captions(args)
+  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 126, in zip_captions
+    with open(meta_data_path, 'w') as out:
+PermissionError: [Errno 13] Permission denied: '/gscratch/scrubbed/briggs3/data/roco/train/radiology/images/metadata.jsonl'

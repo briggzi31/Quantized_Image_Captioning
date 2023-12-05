@@ -141,8 +141,7 @@ def get_args() -> argparse.Namespace:
                         default="/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl", required=False)
     parser.add_argument('-b', '--batch_size', type=int, default=10, required=False)
     parser.add_argument('-s', '--split', type=str, default="test", required=False)
-    # parser.add_argument('-hp', '--hyper_param_config', type=str, default="hyper_param_config/finetuning_config.yaml", required=True)
-    # parser.add_argument('-e', '--num_epochs', type=int, default=200, required=False)
+    parser.add_argument('-o', '--output_file', type=str, default="/outputs/generated_captions.csv", required=False)
 
     return parser.parse_args()
 

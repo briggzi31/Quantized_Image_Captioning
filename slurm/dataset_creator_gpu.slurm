@@ -3,7 +3,7 @@
 ## Job Name and User Config
 #SBATCH --job-name=dataset_creator
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=briggs3@uw.edu
+#SBATCH --mail-user=irisz1@uw.edu
 
 ## Parition and Allocation
 ##SBATCH -p gpu-2080ti  # specify partition
@@ -16,7 +16,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
-#SBATCH --gpus=1  
+#SBATCH --gpus=1
 
 # Directory
 #SBATCH --chdir=./
