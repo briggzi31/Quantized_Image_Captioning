@@ -4,6 +4,8 @@ import os
 import argparse
 import logging
 import pickle
+import json
+import pandas as pd
 
 from finetune_model import gpu_config, quantize_model, logging_config, resume_training
 import torch
@@ -78,21 +80,44 @@ def predict_captions(
     :param data: The data to be inferred on
     """
     for i in range(0, len(data), args.batch_size):
+        captions_df = pd.DataFrame()
+
         stop = i + args.batch_size
         if i + args.batch_size > len(data):
             stop = len(data)
 
         batch = data[i:stop]
+        batch_roco_ids = batch["ROCO_ID"]
+        batch_file_names = batch["file_name"]
         batch_images = batch["images"]
         target_captions = batch["text"]
+
         inputs = processor(images=batch_images, return_tensors="pt").to(args.device)
         pixel_values = inputs.pixel_values
         print('batch_image:', batch_image[0])
         print('tar_caption:', target_captions[0])
 
         generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
-        generated_caption = processor.batch_decode(generated_ids, skip_special_tokens=True)
-        print('gen_caption:\t', generated_caption[0])
+        generated_captions = processor.batch_decode(generated_ids, skip_special_tokens=True)
+        print('gen_caption:\t', generated_captions[0])
+
+        for j in len(generated_captions):
+            roco_id = batch_roco_ids[j].strip()
+            image_file_name = batch_file_names[j].strip()
+            gen_caption = generated_captions[j].strip()
+            tar_caption = target_captions[j].strip()
+
+            out_row = {
+                'ROCO_ID': roco_id,
+                'file_name': image_file_name,
+                'generated_caption': gen_caption,
+                'target_caption': tar_caption
+            }
+
+            captions_df.append(out_row, ignore_index=True)
+
+        captions_df.to_csv(args.output_file, mode='a', index=False, header=False)
+
         break
 
 
