@@ -233,9 +233,9 @@ def resume_training(args: argparse.Namespace) -> tuple[bool, Optional[str]]:
     if len(current_checkpoint_files) < 1:
         resume_training = False
         current_checkpoint = None
+        sorted_step_num = []
     else:
         resume_training = True
-
         sorted_step_num = list(sorted(map(lambda x: int(x.split("_")[1].split(".")[0]), current_checkpoint_files)))
 
     return resume_training, sorted_step_num
