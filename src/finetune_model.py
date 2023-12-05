@@ -308,7 +308,6 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-d', '--data_path', type=str,
                         default="/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl", required=False)
     parser.add_argument('-hp', '--hyper_param_config', type=str, default="hyper_param_config/finetuning_config.yaml", required=True)
-    # parser.add_argument('-e', '--num_epochs', type=int, default=200, required=False)
 
     return parser.parse_args()
 
