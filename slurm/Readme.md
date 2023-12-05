@@ -19,15 +19,8 @@ squeue -u briggs3
 
 Logs go to 
 ```
-logs/finetune2
+logs/finetune
 ```
-
-Anna may alter:
-```src/image_dataset.py```
-Specifically, the ```collate_fn() in ImageCaptioningDataset```
-
-```src/finetune_model.py```
-Specifically, the ```train_model()```
 
 
 The python scripts is based off of [colab](https://colab.research.google.com/drive/16XbIysCzgpAld7Kd9-xz-23VPWmqdWmW?usp=sharing#scrollTo=6cCVhsmJxxjH). I am confused why they pass input_ids=input_ids in this method when training the model:
