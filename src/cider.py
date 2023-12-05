@@ -2,16 +2,16 @@ import argparse
 import pandas as pd
 
 
-def create_eval_dicts(captions_df: pd.DataFrame) -> tuple(dict[str, dict[str, str]], dict[str, dict[str, str]]):
-    """
-    Create two dictionaries for CIDEr evaluation: generated captions and target captions
+# def create_eval_dicts(captions_df: pd.DataFrame) -> tuple(dict[str, dict[str, str]], dict[str, dict[str, str]]):
+#     """
+#     Create two dictionaries for CIDEr evaluation: generated captions and target captions
 
-    :params captions_df: The DataFrame of generated and target captions with associated metadata
-    :returns: tuple of generated caption and target caption dictionaries formatted for evaluation
-    """
-    gen_dict = {}
-    tar_dict = {}
-    return gen_dict, targ_dict
+#     :params captions_df: The DataFrame of generated and target captions with associated metadata
+#     :returns: tuple of generated caption and target caption dictionaries formatted for evaluation
+#     """
+#     gen_dict = {}
+#     tar_dict = {}
+#     return gen_dict, targ_dict
 
 
 def load_captions_file(args: argparse.Namespace) -> pd.DataFrame:
@@ -45,6 +45,7 @@ def main():
 
     # Load in generated captions csv
     captions_df = load_captions_file(args)
+    print('captions dataframe:\n', captions_df)
 
     # Turn generated and target captions into 2 dictionaries of specified format
 
