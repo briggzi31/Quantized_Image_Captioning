@@ -15,6 +15,8 @@ python src/inference.py \
     --log-file logs/inference/log.log \
     --model-id Salesforce/blip2-opt-2.7b \
     --cache-dir /gscratch/scrubbed/irisz1/.cache/ \
-    --data_path /mmfs1/gscratch/scrubbed/irisz1/data/flickr8k/datasets/data.pkl \
-    # --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints \
+    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/roco/datasets/radiology_data.pkl \
+    --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints \
+    --batch_size 10 \
+    --split "test"
     # --hyper_param_config hyper_param_config/finetuning_config.yaml
