@@ -100,6 +100,7 @@ def main():
 
     logging.info("Quantizing Pre-trained model...")
     model, processor = quantize_model(args)
+    model.config.use_cache = True # Re-enabling for faster inference, was turned off during training!
     logging.info("Successfully quantized Pre-trained model!")
     print('model:', model)
     print('processor:', processor)

@@ -1,3 +1,5 @@
 ---
 num_epochs: 20
-
+batch_size: 2
+save_steps: 500
+alpha: 0.0001

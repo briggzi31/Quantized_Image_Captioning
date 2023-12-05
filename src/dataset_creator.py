@@ -3,6 +3,15 @@ dataset_creator
 
 This module will load in a directory full of images and corresponding captions into a HuggingFace
     image datasets.DatasetDict object
+
+usage:
+    Run from Quantized_Image_Captioning directory:
+
+        ./scripts/dataset_creator.sh
+
+        OR
+
+        sbatch slurm/dataset_creator_gpu.slurm
 """
 
 import argparse
@@ -106,8 +115,6 @@ def zip_captions(args) -> None:
 
     captions = pd.merge(captions, licenses, on="ROCO_ID", how="inner")
     captions.rename(columns={"PMC_ID": "file_name"}, inplace=True)
-
-    print("captions", captions)
     
     # create json
     json_captions = captions.to_json(orient='records')
@@ -188,8 +195,6 @@ def main():
             args.caption_file = os.path.join(cur_directory, "captions.txt")
             args.licenses_file = os.path.join(cur_directory, "licences.txt")
 
-            print(args.licenses_file)
-
             # create metadata.jsonl file
             zip_captions(args)
 
@@ -208,18 +213,6 @@ def main():
 
     args.output_file = os.path.join(args.output_dir, "non-radiology_data.pkl")
     save_dataset(args, non_radiology_data)
-
-    # # create metadata.jsonl file
-    # zip_captions(args)
-
-    # # read in the dataset
-    # data = read_in_data(args)
-
-    # train_val_test split
-    # data = perform_train_val_test_split(args, data)
-
-    # # pickle and save the data set 
-    # save_dataset(args, data)
 
 
 if __name__ == '__main__':

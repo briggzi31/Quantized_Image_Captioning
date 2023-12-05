@@ -39,64 +39,9 @@ from transformers.trainer_utils import get_last_checkpoint
 
 from datasets import DatasetDict, Dataset
 
-from typing import Union, Any
+from typing import Union, Any, Optional
 
 from image_dataset import ImageCaptioningDataset
-
-# def train_model(
-#     args: argparse.Namespace,
-#     model: Blip2ForConditionalGeneration,
-#     processor: Blip2Processor,
-#     data: DatasetDict
-# ) -> None:
-#     """
-#     This will train the model
-
-#     :param args: The arguments passed in from the console
-#     :param model: The pre-trained model
-#     :param processor: The pre-trained processor containing a tokenizer and vision encoder
-#     :param data: The data in train, val, test split
-#     """
-#     training_args = TrainingArguments(
-#         per_device_train_batch_size=1,
-#         gradient_accumulation_steps=4,
-#         warmup_steps=2,
-#         max_steps=10,
-#         learning_rate=2e-4,
-#         fp16=True,
-#         logging_steps=1,
-#         optim="paged_adamw_8bit",
-#         logging_dir="logs/finetune",
-#         logging_strategy="epoch",
-#         output_dir=args.checkpoint_dir,
-#         overwrite_output_dir=True,
-#         save_strategy="steps",
-#         save_steps=500,
-#         save_total_limit=10
-#     )
-
-#     logging.info("Configuring trainer...")
-#     trainer = Trainer(
-#         model=model,
-#         train_dataset=data["train"],
-#         args=training_args,
-#         data_collator=DataCollatorForLanguageModeling(processor.tokenizer, mlm=False),
-
-#     ### We need data['train']['labels'] = decoder_input_ids
-#     ### We need data['train']['pixel_values'] = processor(images=item["image"], padding="max_length", return_tensors="pt")
-
-#     )
-#     logging.info("Successfully configured Trainer!")
-
-#     if args.resume_training:
-#         logging.info(f"Resumeing training from {args.current_checkpoint_dir}")
-#         trainer.train(
-#             resume_from_checkpoint=args.current_checkpoint_dir
-#         )
-#     else:
-#         logging.info("Starting training...")
-#         trainer.train()
-#     logging.info("Training finished")
 
 
 def train_model(
@@ -107,65 +52,111 @@ def train_model(
     hyper_params: dict[Any]
 ) -> None:
     """
-    This will train the model
+    This will train the model.
+    This checkpoints the model to the following directory structure:
+
+        args.checkpoint_dir/
+            checkpoint_20
+            checkpoint_40
+            checkpoint_60
+            checkpoint_80
+            checkpoint_100
 
     :param args: The arguments passed in from the console
     :param model: The pre-trained model
     :param processor: The pre-trained processor containing a tokenizer and vision encoder
     :param data: The data in train, val, test split
-
-    outputs/
-        epoch1/
-            chekcpoint20/
-            checkpoint50/
-        epoch2/.
-            ..
-        ...
-        epoch_n-1/
-            checkpoint80
-
-        epochn/
-            checkpoint100/
-
-
-    outputs/
-        checkpoint_1_20
-        checkpoint_1_40
-        checkpoint_2_60
-        checkpoint_2_80
-        checkpoint_3_100
-
     """
-    # bos = processor.tokenizer.bos_token
-
-    train_dataloader = DataLoader(data, shuffle=True, batch_size=2, collate_fn=data.collate_fn)
-    optimizer = AdamW(model.parameters(), lr=5e-5)
-
-    model.train()
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
 
-    for i in range(hyper_params['num_epochs']):
-        print("Epoch:", i + 1)
+    train_dataloader = DataLoader(data, shuffle=True, batch_size=hyper_params['batch_size'], collate_fn=data.collate_fn)
+    optimizer = AdamW(model.parameters(), lr=hyper_params['alpha'])
+
+    if args.resume_training:
+        
+        while len(args.current_checkpoints) > 0:
+            current_checkpoint = os.path.join(args.checkpoint_dir, "model_" + str(args.current_checkpoints.pop()) + ".tar")
+            logging.info(f"Trying to load in model from {current_checkpoint}")
+
+            try:
+                checkpoint = torch.load(current_checkpoint)
+                logging.info(f"Successfully loaded model in from {current_checkpoint}")
+                break
+            except RuntimeError:
+                logging.warning(f"Error: Failed to load checkpoint {current_checkpoint}")
+        
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        start_epoch = checkpoint['epoch']
+        tot_steps = checkpoint['tot_steps']
+        loss = checkpoint['loss']
+        logging.info(f"Current epoch: {start_epoch}")
+        logging.info(f"Total steps: {tot_steps}")
+        logging.info(f"Current Loss: {loss}")
+
+    else:
+        start_epoch = 0
+        tot_steps = 0
+        loss = None
+
+    model.train()
+
+    for i in range(start_epoch, hyper_params['num_epochs']):
+        epoch = i + 1
+
+        print("Epoch:", epoch)
         for idx, batch in enumerate(train_dataloader):
 
             bos_token = batch.pop('bos').to(args.device)
             captions = batch.pop('labels').to(args.device)
             pixel_values = batch.pop('pixel_values').to(args.device, torch.float16)
 
+            # print("bos shape", bos_token.shape)
+            # print("bos", bos_token)
+            # print("captions shape", captions.shape)
+            # print("pixeL_values shape", pixel_values.shape)
+
+            # why do we pass captions to both input_ids and labels
+            logging.debug("Performing forward pass...")
             outputs = model(
-                input_ids=bos_token,
+                input_ids=captions,
                 pixel_values=pixel_values,
                 labels=captions
             )
+            logging.debug("Forward pass done!")
 
             loss = outputs.loss
 
             print("Loss:", loss.item())
+            logging.info(f"Epoch: {i + 1}, idx: {idx}")
+            logging.info(f"Loss: {loss.item()}")
 
+            logging.debug("Performing backward pass...")
             loss.backward()
 
             optimizer.step()
             optimizer.zero_grad()
+            logging.debug("Backward pass done!")
+
+            tot_steps += 1
+
+            # checkpoint the model every args.save_steps
+            if tot_steps % hyper_params['save_steps'] == 0:
+                print("")
+                print("Hooray!", tot_steps)
+
+                checkpoint_path = os.path.join(args.checkpoint_dir, "model_" + str(tot_steps) + ".tar")
+                logging.info(f"Step: {tot_steps} | Saving model to {checkpoint_path}...")
+
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': loss,
+                    'tot_steps': tot_steps
+                }, checkpoint_path)
+
+                logging.info(f"Model Saved!")
 
 
 def quantize_model(
@@ -196,7 +187,8 @@ def quantize_model(
         args.model_id,
         quantization_config=nf4_config,
         cache_dir=args.cache_dir,
-        device_map='auto'
+        device_map='auto',
+        # max_memory=f'{int(torch.cuda.mem_get_info()[0]/1024**3)-2}GB'
     )
 
     model_double_quant.gradient_checkpointing_enable()
@@ -226,6 +218,29 @@ def get_trainable_parameters(model: PeftModel) -> str:
     return f"trainable params: {trainable_params:,d} || all params: {all_param:,d} || trainable%: {100 * trainable_params / all_param}"
 
 
+def resume_training(args: argparse.Namespace) -> tuple[bool, Optional[str]]:
+    """
+    Returns whether to resume training, as well as the last checkpoint_dir if
+        resume_training is True
+    :param args: The command line argument kwargs
+    :return: whether we should resume training, and if so the the current checkpoint directory to load the model from
+    """
+    if not os.path.isdir(args.checkpoint_dir):
+        os.makedirs(args.checkpoint_dir)
+
+    current_checkpoint_files = os.listdir(args.checkpoint_dir)
+
+    if len(current_checkpoint_files) < 1:
+        resume_training = False
+        current_checkpoint = None
+    else:
+        resume_training = True
+
+        sorted_step_num = list(sorted(map(lambda x: int(x.split("_")[1].split(".")[0]), current_checkpoint_files)))
+
+    return resume_training, sorted_step_num
+
+
 def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[str, ImageCaptioningDataset]:
     """
     This loads in the specified data from a pickle file
@@ -236,21 +251,11 @@ def load_data(args: argparse.Namespace, processor: Blip2Processor) -> dict[str, 
     with open(args.data_path, "rb") as f:
         data = pickle.load(f)
 
-    print("pre-loaded data", data)
-
     train_data = ImageCaptioningDataset(data['train'], processor)
     val_data = ImageCaptioningDataset(data['val'], processor)
     test_data = ImageCaptioningDataset(data['test'], processor)
 
-    # data = data.map(lambda samples: processor.tokenizer(samples["text"]), batched=True)
-
-    # dataset = DatasetDict()
-    # dataset['train'] = Dataset.from_dict(train_data)
-    # dataset['val'] = Dataset.from_dict(val_data)
-    # dataset['test'] = Dataset.from_dict(test_data)
-
     return {'train': train_data, 'val': val_data, 'test': test_data}
-    # return dataset
 
 
 def gpu_config(args: argparse.Namespace) -> None:
@@ -279,7 +284,7 @@ def logging_config(args: argparse.Namespace) -> None:
     fmt = '%(asctime)s | %(levelname)s | "%(filename)s::line-%(lineno)d | %(message)s'
     logging.basicConfig(
         filename=args.log_file,
-        filemode='w',
+        filemode='a',
         level=logging.DEBUG,
         format=fmt,
     )
@@ -319,8 +324,8 @@ def main():
     model, processor = quantize_model(args)
     logging.info("Successfully quantized Pre-trained model!")
 
-    print("peft model", model)
-    print("peft processor", processor)
+    # print("peft model", model)
+    # print("peft processor", processor)
     print(f"{get_trainable_parameters(model)}")
 
     logging.info(f"{get_trainable_parameters(model)}")
@@ -328,17 +333,15 @@ def main():
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args, processor)
     logging.info("Sucessfully loaded data!")
-    print("train data\n", data["train"])
-    print("val data\n", data["val"])
-    print("test data\n", data["test"])
+    # print("train data\n", data["train"])
+    # print("val data\n", data["val"])
+    # print("test data\n", data["test"])
 
     train_data = data['train']
 
-    args.current_checkpoint_dir = get_last_checkpoint(args.checkpoint_dir)
+    args.resume_training, args.current_checkpoints = resume_training(args)
 
-    args.resume_training = True
-    if args.current_checkpoint_dir is None:
-        args.resume_training = False
+    print(args.resume_training)
 
     with open(args.hyper_param_config) as f:
             hyper_params = yaml.safe_load(f)

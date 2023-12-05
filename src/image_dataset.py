@@ -49,6 +49,8 @@ class ImageCaptioningDataset(Dataset):
 
         bos = self.processor.tokenizer.bos_token
         bos_list = [bos for _ in range(len(batch))]
-        processed_batch['bos'] = self.processor.tokenizer(bos_list, padding=False, return_tensors="pt")["input_ids"]
+        # bos_list = [bos]
+        # processed_batch['bos'] = self.processor.tokenizer(bos_list, padding=True, return_tensors="pt")["input_ids"]
+        processed_batch['bos'] = torch.tensor([[2], [2]], dtype=torch.int)
 
         return processed_batch
