@@ -20,6 +20,9 @@ import os
 import json
 import pickle
 
+import PIL
+import PIL.Image
+
 import pandas as pd
 
 from datasets import (
@@ -115,6 +118,22 @@ def zip_captions(args) -> None:
 
     captions = pd.merge(captions, licenses, on="ROCO_ID", how="inner")
     captions.rename(columns={"PMC_ID": "file_name"}, inplace=True)
+
+    # Identify and/or delete non-existent or corrupted images
+    for image_name in os.listdir(args.image_input_dir):
+        image_path = os.path.join(args.image_input_dir, image_name)
+
+        # image doesn't exist
+        if not os.path.exists(image_path):
+            captions.drop(captions.loc[captions['file_name']==image_name].index, inplace=True)
+        else: 
+            try:
+                image = PIL.Image.open(image_path)
+            except PIL.UnidentifiedImageError as e:  #image does exist but is corrupted
+                print(f"Error in file {filename}: {e}")
+                os.remove(os.path.join(folder_path, filename))
+                captions.drop(captions.loc[captions['file_name']==image_name].index, inplace=True)
+                print(f"Removed file {filename}")
     
     # create json
     json_captions = captions.to_json(orient='records')
