@@ -79,7 +79,19 @@ def predict_captions(
     :param processor: The pre-trained processor containing a tokenizer and vision encoder
     :param data: The data to be inferred on
     """
-    for i in range(0, len(data), args.batch_size):
+    # decides whether we continue inference where we left off, or start anew
+    if os.path.exists(args.checkpoint_file):
+        with open(args.checkpoint_file, 'r') as f:
+            checkpoints = f.readlines()
+        start = max(list(map(lambda x: int(x), checkpoints)))
+    else:
+        start = 0
+    logging.info(f"starting batch num: {start}")
+
+    for i in range(start, len(data), args.batch_size):
+        print(f"cur iter {i}/{len(data)}")
+        logging.info(f"starting batch {i}/{(len(data) + 1) // args.batch_size}")
+
         captions_df = pd.DataFrame()
 
         stop = i + args.batch_size
@@ -87,39 +99,41 @@ def predict_captions(
             stop = len(data)
 
         batch = data[i:stop]
+
         batch_roco_ids = batch["ROCO_ID"]
-        batch_file_names = batch["file_name"]
-        batch_images = batch["images"]
+        batch_images = batch["image"]
         target_captions = batch["text"]
 
         inputs = processor(images=batch_images, return_tensors="pt").to(args.device)
         pixel_values = inputs.pixel_values
-        print('batch_image:', batch_image[0])
+        print('batch_image:', batch_images[0])
         print('tar_caption:', target_captions[0])
 
         generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
         generated_captions = processor.batch_decode(generated_ids, skip_special_tokens=True)
         print('gen_caption:\t', generated_captions[0])
 
-        for j in len(generated_captions):
+        for j in range(len(generated_captions)):
             roco_id = batch_roco_ids[j].strip()
-            image_file_name = batch_file_names[j].strip()
             gen_caption = generated_captions[j].strip()
             tar_caption = target_captions[j].strip()
 
             out_row = {
-                'ROCO_ID': roco_id,
-                'file_name': image_file_name,
-                'generated_caption': gen_caption,
-                'target_caption': tar_caption
+                'ROCO_ID': [roco_id],
+                'generated_caption': [gen_caption],
+                'target_caption': [tar_caption]
             }
 
-            captions_df.append(out_row, ignore_index=True)
+            cur_caption_df = pd.DataFrame(out_row)
+            print(cur_caption_df)
+            captions_df = pd.concat([captions_df, cur_caption_df], axis=0, ignore_index=True)
+            print(captions_df[-5:])
 
         captions_df.to_csv(args.output_file, mode='a', index=False, header=False)
 
-        break
-
+        with open(args.checkpoint_file, 'a') as out:
+            logging.info(f"writing batch_num {i} to {args.checkpoint_file}")
+            out.write(str(i) + "\n")
 
 
 def get_args() -> argparse.Namespace:
@@ -142,35 +156,41 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-b', '--batch_size', type=int, default=10, required=False)
     parser.add_argument('-s', '--split', type=str, default="test", required=False)
     parser.add_argument('-o', '--output_file', type=str, default="/outputs/generated_captions.csv", required=False)
+    parser.add_argument('-cf', '--checkpoint_file', type=str, default='outputs/checkpoint.txt', required=False)
 
     return parser.parse_args()
 
 
 def main():
+    # configure module
     args = get_args()
     logging_config(args)
     args.device = gpu_config(args)
 
     logging.info(f"Current Configuration args: {args}")
 
+    # load in quantized pre-trained model
     logging.info("Quantizing Pre-trained model...")
     model, processor = quantize_model(args)
     logging.info("Successfully quantized Pre-trained model!")
     print('model quant:', model)
     print('processor quant:', processor)
 
-    logging.info(f"Trying to load in model from for inference")
+    # load in local finetuned model
+    logging.info(f"Trying to load in fine-tuned model for inference...")
     _ , args.current_checkpoints = resume_training(args)
     model = load_finetuned_model(args, model)
     logging.info("Successfully loaded finetuned model!")
     print('model fine:', model)
     print('processor fine:', processor)
 
+    # load teh data
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args)
     data = data[args.split]
     logging.info("Sucessfully loaded data!")
 
+    # generate captions
     logging.info("Predicting captions...")
     predict_captions(args, model, processor, data)
     logging.info("Sucessfully predicted captions...")

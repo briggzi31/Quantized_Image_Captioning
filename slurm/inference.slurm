@@ -3,8 +3,8 @@
 ## Job Name and User Config
 #SBATCH --job-name=blip2_inference
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=irisz1@uw.edu
-## SBATCH --mail-user=briggs3@uw.edu
+##SBATCH --mail-user=irisz1@uw.edu
+#SBATCH --mail-user=briggs3@uw.edu
 
 
 ## Parition and Allocation
@@ -14,7 +14,7 @@
 
 ## Resources
 #SBATCH --nodes=1
-#SBATCH --time=00:20:00  # Max runtime in DD-HH:MM:SS format.
+#SBATCH --time=02:00:00  # Max runtime in DD-HH:MM:SS format.
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
 #SBATCH --mem=64G
