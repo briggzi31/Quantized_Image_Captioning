@@ -127,13 +127,14 @@ def zip_captions(args) -> None:
         if not os.path.exists(image_path):
             captions.drop(captions.loc[captions['file_name']==image_name].index, inplace=True)
         else: 
-            try:
-                image = PIL.Image.open(image_path)
-            except PIL.UnidentifiedImageError as e:  #image does exist but is corrupted
-                print(f"Error in file {filename}: {e}")
-                os.remove(os.path.join(folder_path, filename))
-                captions.drop(captions.loc[captions['file_name']==image_name].index, inplace=True)
-                print(f"Removed file {filename}")
+            pass
+            # try:
+            #     image = PIL.Image.open(image_path)
+            # except PIL.UnidentifiedImageError as e:  #image does exist but is corrupted
+            #     print(f"Error in file {image_name}: {e}")
+            #     os.remove(image_path)
+            #     captions.drop(captions.loc[captions['file_name']==image_name].index, inplace=True)
+            #     print(f"Removed file {image_name}")
     
     # create json
     json_captions = captions.to_json(orient='records')
@@ -141,7 +142,11 @@ def zip_captions(args) -> None:
 
     # save metadata.jsonl to images folder
     meta_data_path = os.path.join(args.image_input_dir, "metadata.jsonl")
+    if os.path.exists(meta_data_path):
+        os.remove(meta_data_path)
+
     logging.info(f"Writing to metadata.jsonl file to {meta_data_path}!")
+    print(f"Writing to metadata.jsonl file to {meta_data_path}!")
     with open(meta_data_path, 'w') as out:
         for image_caption in json_captions:
             cur_image_caption = json.dumps(image_caption)

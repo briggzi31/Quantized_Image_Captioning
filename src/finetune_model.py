@@ -104,17 +104,12 @@ def train_model(
     for i in range(start_epoch, hyper_params['num_epochs']):
         epoch = i + 1
 
-        print("Epoch:", epoch)
+        print(f"Epoch: {epoch}/{hyper_params['num_epochs']}")
         for idx, batch in enumerate(train_dataloader):
 
-            bos_token = batch.pop('bos').to(args.device)
+            # bos_token = batch.pop('bos').to(args.device)
             captions = batch.pop('labels').to(args.device)
             pixel_values = batch.pop('pixel_values').to(args.device, torch.float16)
-
-            # print("bos shape", bos_token.shape)
-            # print("bos", bos_token)
-            # print("captions shape", captions.shape)
-            # print("pixeL_values shape", pixel_values.shape)
 
             # why do we pass captions to both input_ids and labels
             logging.debug("Performing forward pass...")
@@ -142,9 +137,6 @@ def train_model(
 
             # checkpoint the model every args.save_steps
             if tot_steps % hyper_params['save_steps'] == 0:
-                print("")
-                print("Hooray!", tot_steps)
-
                 checkpoint_path = os.path.join(args.checkpoint_dir, "model_" + str(tot_steps) + ".tar")
                 logging.info(f"Step: {tot_steps} | Saving model to {checkpoint_path}...")
 
@@ -155,6 +147,16 @@ def train_model(
                     'loss': loss,
                     'tot_steps': tot_steps
                 }, checkpoint_path)
+                args.current_checkpoints.append(tot_steps)
+
+                # remove previous model checkpoints and keep only the 10 most recent
+                oldest_checkpoint_idx = 0
+                while len(os.listdir(args.checkpoint_dir)) > 10:
+                    oldest_checkpoint_num = args.current_checkpoints.pop(oldest_checkpoint_idx)
+                    oldest_checkpoint = os.path.join(args.checkpoint_dir, "model_" + str(oldest_checkpoint_num) + ".tar")
+                    logging.info(f"Removing oldest checkpoint: {oldest_checkpoint}")
+                    os.remove(oldest_checkpoint)
+                    oldest_checkpoint_idx += 1
 
                 logging.info(f"Model Saved!")
 
@@ -182,13 +184,19 @@ def quantize_model(
         bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.bfloat16
     )
+    
+    device_properties = torch.cuda.get_device_properties('cuda:0')
+    logging.info(f"Cuda GPU properties: {device_properties}")
+
+    max_gpu_model_mem = device_properties
+
 
     model_double_quant = Blip2ForConditionalGeneration.from_pretrained(
         args.model_id,
         quantization_config=nf4_config,
         cache_dir=args.cache_dir,
         device_map='auto',
-        # max_memory=f'{int(torch.cuda.mem_get_info()[0]/1024**3)-2}GB'
+        max_memory={0: "16GIB"}
     )
 
     model_double_quant.gradient_checkpointing_enable()
@@ -265,6 +273,9 @@ def gpu_config(args: argparse.Namespace) -> None:
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+    # to handle memory
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+
     logging.info(f"Device Type: {device}")
     return device
 
@@ -323,8 +334,8 @@ def main():
     model, processor = quantize_model(args)
     logging.info("Successfully quantized Pre-trained model!")
 
-    # print("peft model", model)
-    # print("peft processor", processor)
+    print("peft model", model)
+    print("peft processor", processor)
     print(f"{get_trainable_parameters(model)}")
 
     logging.info(f"{get_trainable_parameters(model)}")
@@ -332,23 +343,15 @@ def main():
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args, processor)
     logging.info("Sucessfully loaded data!")
-    # print("train data\n", data["train"])
-    # print("val data\n", data["val"])
-    # print("test data\n", data["test"])
 
     train_data = data['train']
 
     args.resume_training, args.current_checkpoints = resume_training(args)
 
-    print(args.resume_training)
-
     with open(args.hyper_param_config) as f:
             hyper_params = yaml.safe_load(f)
 
     train_model(args, model, processor, train_data, hyper_params)
-
-    # print("processor", processor)
-    # print("model", model)
 
     logging.info("Finished!!")
 

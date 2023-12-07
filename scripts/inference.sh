@@ -15,7 +15,7 @@ python src/inference.py \
     --log-file logs/inference/log.log \
     --model-id Salesforce/blip2-opt-2.7b \
     --cache-dir /gscratch/scrubbed/irisz1/.cache/ \
-    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/roco/datasets/radiology_data.pkl \
+    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/roco/datasets_OLD/radiology_data.pkl \
     --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints/radiology \
     --batch_size 10 \
     --split "test" \

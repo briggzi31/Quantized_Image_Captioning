@@ -90,7 +90,7 @@ def predict_captions(
 
     for i in range(start, len(data), args.batch_size):
         print(f"cur iter {i}/{len(data)}")
-        logging.info(f"starting batch {i}/{(len(data) + 1) // args.batch_size}")
+        logging.info(f"starting batch {i}/{((len(data) + 1) // args.batch_size)}")
 
         captions_df = pd.DataFrame()
 

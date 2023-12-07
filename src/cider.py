@@ -2,12 +2,16 @@ import argparse
 import pandas as pd
 
 from pycocoevalcap.cider.cider import Cider
+from pycocoevalcap.meteor.meteor import Meteor
+from pycocoevalcap.rouge.rouge import Rouge
+from pycocoevalcap.bleu.bleu import Bleu
+
 from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 
 from typing import Any
 
 
-def compute_cider(gen_dict: dict[Any], tar_dict: dict[Any]) -> float:
+def compute_scores(generated: dict[Any], target: dict[Any]) -> float:
     """
     This computes the CIDEr score for the given dictionaries of captions
 
@@ -15,16 +19,32 @@ def compute_cider(gen_dict: dict[Any], tar_dict: dict[Any]) -> float:
     :param tar_dict: Dictionar containing target captions
     :return: The overall CIDEr score between the given generated and target captions
     """
-    tokenizer = PTBTokenizer()
+    # tokenizer = PTBTokenizer()
 
-    target = tokenizer.tokenize(tar_dict)
-    generated = tokenizer.tokenize(gen_dict)
+    # target = tokenizer.tokenize(tar_dict)
+    # generated = tokenizer.tokenize(gen_dict)
+
+    scores_dict = {}
 
     cider = Cider()
     score, _ = cider.compute_score(generated, target)
+    scores_dict["CIDEr"] = round(score * 10, 3)
 
-    return round(score * 10, 3)
+    meteor = Meteor()
+    score, _ = meteor.compute_score(generated, target)
+    scores_dict["METEOR"] = score
 
+
+    rouge = Rouge()
+    score, _ = rouge.compute_score(generated, target)
+    scores_dict["ROUGE"] = score
+
+
+    bleu = Bleu()
+    score, _ = bleu.compute_score(generated, target)
+    scores_dict["BLEU"] = sum(score) / len(score)
+
+    return scores_dict
 
 
 def create_eval_dicts(captions_df: pd.DataFrame) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
@@ -68,7 +88,11 @@ def load_captions_file(args: argparse.Namespace) -> pd.DataFrame:
 
     captions_df.drop_duplicates(inplace=True)
 
-    print(captions_df)
+    for col in captions_df.columns:
+        captions_df[col] = captions_df[col].astype(str)
+
+    assert len(captions_df) == captions_df['ROCO_ID'].nunique()
+
     return captions_df
 
 
@@ -82,7 +106,8 @@ def get_args() -> argparse.Namespace:
         prog="CIDEr",
         description="This will get the CIDEr evaluation scores",
     )
-    parser.add_argument('-i', '--input_file', type=str, default="/outputs/generated_captions.csv", required=False)
+    parser.add_argument('-i', '--input_file', type=str, default="outputs/generated_captions.csv", required=False)
+    parser.add_argument('-o', '--output_file', type=str, default="outputs/cider_score.txt", required=False)
 
     return parser.parse_args()
 
@@ -92,20 +117,26 @@ def main():
 
     # Load in generated captions csv
     captions_df = load_captions_file(args)
-    print('captions dataframe:\n', captions_df)
-    print("columns", captions_df.columns)
 
     # Turn generated and target captions into 2 dictionaries of specified format
     gen_dict, tar_dict = create_eval_dicts(captions_df)
 
-    print(gen_dict)
-    print(tar_dict)
+    tokenizer = PTBTokenizer()
+
+    target = tokenizer.tokenize(tar_dict)
+    generated = tokenizer.tokenize(gen_dict)
 
     # Pass into CIDEr
-    cider_score = compute_cider(gen_dict, tar_dict)
+    scores_dict = compute_scores(generated, target)
 
-    print("cider_score", cider_score)
+    print(scores_dict)
 
+    out_str = ""
+    for metric, score in scores_dict.items():
+        out_str += metric + ": " + str(score) + "\n"
+    
+    with open(args.output_file, 'w') as out:
+        out.write(out_str)
 
 
 if __name__ == '__main__':

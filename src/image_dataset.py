@@ -47,10 +47,10 @@ class ImageCaptioningDataset(Dataset):
                 processed_batch['labels'] = text_inputs['input_ids']
                 processed_batch['attention_mask'] = text_inputs['attention_mask']
 
-        bos = self.processor.tokenizer.bos_token
-        bos_list = [bos for _ in range(len(batch))]
-        # bos_list = [bos]
-        # processed_batch['bos'] = self.processor.tokenizer(bos_list, padding=True, return_tensors="pt")["input_ids"]
-        processed_batch['bos'] = torch.tensor([[2], [2]], dtype=torch.int)
+        # bos = self.processor.tokenizer.bos_token
+        # bos_list = [bos for _ in range(len(batch))]
+        # # bos_list = [bos]
+        # # processed_batch['bos'] = self.processor.tokenizer(bos_list, padding=True, return_tensors="pt")["input_ids"]
+        # processed_batch['bos'] = torch.tensor([[2], [2]], dtype=torch.int)
 
         return processed_batch

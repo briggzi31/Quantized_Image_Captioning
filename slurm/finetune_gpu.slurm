@@ -8,7 +8,7 @@
 
 
 ## Parition and Allocation
-## SBATCH -p gpu-2080ti  # specify partition
+##SBATCH -p gpu-2080ti  # specify partition
 #SBATCH -p ckpt
 #SBATCH -A stf  # specify account group
 

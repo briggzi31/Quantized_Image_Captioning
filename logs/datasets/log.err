@@ -1,8 +1,19 @@
 Traceback (most recent call last):
-  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 219, in <module>
+  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/dataset_creator.py", line 149, in zip_captions
+    out.write(str(cur_image_caption) + "\n")
+OSError: [Errno 122] Disk quota exceeded
+
+During handling of the above exception, another exception occurred:
+
+OSError: [Errno 122] Disk quota exceeded
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/dataset_creator.py", line 239, in <module>
     main()
-  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 199, in main
+  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/dataset_creator.py", line 219, in main
     zip_captions(args)
-  File "/mmfs1/home/irisz1/Quantized_Image_Captioning/src/dataset_creator.py", line 126, in zip_captions
+  File "/mmfs1/home/briggs3/Quantized_Image_Captioning/src/dataset_creator.py", line 146, in zip_captions
     with open(meta_data_path, 'w') as out:
-PermissionError: [Errno 13] Permission denied: '/gscratch/scrubbed/briggs3/data/roco/train/radiology/images/metadata.jsonl'
+OSError: [Errno 122] Disk quota exceeded
