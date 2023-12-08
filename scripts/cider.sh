@@ -13,4 +13,5 @@ echo ""
 echo "Running cider.sh..."
 
 python src/cider.py \
-    -i outputs/generated_captions.csv \
+    -i outputs/generated_captions_pre-trained_test.csv \
+    -o outputs/pre-trained_test_scores.txt

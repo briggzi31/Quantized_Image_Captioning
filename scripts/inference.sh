@@ -8,15 +8,20 @@ echo "current conda environment: "
 echo $CONDA_PREFIX
 echo ""
 
-# run python script
+split='val'  # 'test', 'val', 'train'
+model_type='pre-trained'  # 'pre-trained', 'finetuned'
 
-echo "running python script"
+echo "running python script for inference"
 python src/inference.py \
-    --log-file logs/inference/log.log \
+    --log-file logs/inference_${model_type}_${split}/log.log \
     --model-id Salesforce/blip2-opt-2.7b \
-    --cache-dir /gscratch/scrubbed/irisz1/.cache/ \
-    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/roco/datasets_OLD/radiology_data.pkl \
+    --cache-dir /gscratch/scrubbed/briggs3/.cache/ \
+    --data_path /mmfs1/gscratch/scrubbed/briggs3/data/roco/datasets/radiology_data.pkl \
     --checkpoint_dir /gscratch/scrubbed/briggs3/model_checkpoints/radiology \
+    --checkpoint_file outputs/checkpoint_${model_type}_${split}.txt \
     --batch_size 10 \
-    --split "test" \
-    --output_file outputs/generated_captions.csv
+    --split ${split} \
+    --output_file outputs/generated_captions_${model_type}_${split}.csv \
+    # --use_finetuned_model
+
+echo "finished inference"

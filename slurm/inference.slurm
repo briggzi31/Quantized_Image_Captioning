@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Job Name and User Config
-#SBATCH --job-name=blip2_inference
+#SBATCH --job-name=val_pre-trained_val_blip2_inference
 #SBATCH --mail-type=ALL
 ##SBATCH --mail-user=irisz1@uw.edu
 #SBATCH --mail-user=briggs3@uw.edu
@@ -22,8 +22,8 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=logs/inference/log.out # where STDOUT goes
-#SBATCH --error=logs/inference/log.err # where STDERR goes
+#SBATCH --output=logs/inference_pre-trained_val/log.out # where STDOUT goes
+#SBATCH --error=logs/inference_pre-trained_val/log.err # where STDERR goes
 
 
 ## Command(s) to run:

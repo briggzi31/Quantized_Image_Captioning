@@ -1,5 +1,5 @@
 ---
-num_epochs: 3
-batch_size: 8
-save_steps: 500
-alpha: 0.0001
+num_epochs: 3  # How many epochs to train for before stopping
+batch_size: 8  # training batch size 
+save_steps: 500  # How many batches to run forward/backward before saving the model
+alpha: 0.0001  # learning rate for AdamW Optimizer

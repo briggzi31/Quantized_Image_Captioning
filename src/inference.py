@@ -154,9 +154,10 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-d', '--data_path', type=str,
                         default="/gscratch/scrubbed/briggs3/data/flickr8k/datasets/data.pkl", required=False)
     parser.add_argument('-b', '--batch_size', type=int, default=10, required=False)
-    parser.add_argument('-s', '--split', type=str, default="test", required=False)
+    parser.add_argument('-s', '--split', type=str, default="test", required=False)  # 'train', 'val', 'test'
     parser.add_argument('-o', '--output_file', type=str, default="/outputs/generated_captions.csv", required=False)
     parser.add_argument('-cf', '--checkpoint_file', type=str, default='outputs/checkpoint.txt', required=False)
+    parser.add_argument('-uf', '--use_finetuned_model', action='store_true', required=False)
 
     return parser.parse_args()
 
@@ -176,18 +177,22 @@ def main():
     print('model quant:', model)
     print('processor quant:', processor)
 
+    if args.use_finetuned_model:
     # load in local finetuned model
-    logging.info(f"Trying to load in fine-tuned model for inference...")
-    _ , args.current_checkpoints = resume_training(args)
-    model = load_finetuned_model(args, model)
-    logging.info("Successfully loaded finetuned model!")
-    print('model fine:', model)
-    print('processor fine:', processor)
+        logging.info(f"Trying to load in fine-tuned model for inference...")
+        _ , args.current_checkpoints = resume_training(args)
+        model = load_finetuned_model(args, model)
+        logging.info("Successfully loaded finetuned model!")
+        print('model fine:', model)
+        print('processor fine:', processor)
+    else:
+        logging.info("skipping loading in fine-tuned model. Using pre-trained model only!")
 
     # load teh data
     logging.info(f"Loading data from {args.data_path}...")
     data = load_data(args)
     data = data[args.split]
+    logging.info(f"data length: {len(data)}")
     logging.info("Sucessfully loaded data!")
 
     # generate captions

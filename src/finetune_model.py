@@ -122,10 +122,6 @@ def train_model(
 
             loss = outputs.loss
 
-            print("Loss:", loss.item())
-            logging.info(f"Epoch: {i + 1}, idx: {idx}")
-            logging.info(f"Loss: {loss.item()}")
-
             logging.debug("Performing backward pass...")
             loss.backward()
 
@@ -134,6 +130,10 @@ def train_model(
             logging.debug("Backward pass done!")
 
             tot_steps += 1
+
+            print("Loss:", loss.item())
+            logging.info(f"Epoch: {i + 1}, idx: {idx}, tot_steps: {tot_steps}")
+            logging.info(f"Loss: {loss.item()}")
 
             # checkpoint the model every args.save_steps
             if tot_steps % hyper_params['save_steps'] == 0:
