@@ -18,6 +18,30 @@ from transformers import (
 from datasets import DatasetDict, Dataset
 
 
+def load_unquantized_unfinetuned_model(
+    args: argparse.Namespace,
+) -> tuple[Blip2ForConditionalGeneration, Blip2Processor]:
+    """
+    This loads in the specified unquantized and unfinetuned base model from HuggingFace
+
+    :param args: The arguments passed in from the console
+    :return: The pre-trained double quanitized model, and the corresponding pre-trained tokenizer
+    """
+    processor = Blip2Processor.from_pretrained(
+        args.model_id,
+        cache_dir=args.cache_dir
+    )
+
+    model = Blip2ForConditionalGeneration.from_pretrained(
+        args.model_id,
+        cache_dir=args.cache_dir,
+        device_map={"": 0},
+        torch_dtype=torch.float16
+    )
+
+    return model, processor
+
+
 def load_finetuned_model(
     args: argparse.Namespace,
     model: Blip2ForConditionalGeneration,
@@ -158,6 +182,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-o', '--output_file', type=str, default="/outputs/generated_captions.csv", required=False)
     parser.add_argument('-cf', '--checkpoint_file', type=str, default='outputs/checkpoint.txt', required=False)
     parser.add_argument('-uf', '--use_finetuned_model', action='store_true', required=False)
+    parser.add_argument('-nq', '--no_quantization', action='store_true', required=False)
 
     return parser.parse_args()
 
@@ -171,11 +196,16 @@ def main():
     logging.info(f"Current Configuration args: {args}")
 
     # load in quantized pre-trained model
-    logging.info("Quantizing Pre-trained model...")
-    model, processor = quantize_model(args)
-    logging.info("Successfully quantized Pre-trained model!")
-    print('model quant:', model)
-    print('processor quant:', processor)
+    if args.no_quantization:
+        logging.info("Loading unquantized, unfinetuned model...")
+        model, processor = load_unquantized_unfinetuned_model(args)
+        logging.info("Successfuly loaded unquantized, unfinetuned model!")
+    else:   
+        logging.info("Quantizing Pre-trained model...")
+        model, processor = quantize_model(args)
+        logging.info("Successfully quantized Pre-trained model!")
+    print('model:', model)
+    print('processor:', processor)
 
     if args.use_finetuned_model:
     # load in local finetuned model

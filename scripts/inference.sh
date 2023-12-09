@@ -9,7 +9,7 @@ echo $CONDA_PREFIX
 echo ""
 
 split='val'  # 'test', 'val', 'train'
-model_type='pre-trained'  # 'pre-trained', 'finetuned'
+model_type='no-quantization'  # 'pre-trained', 'finetuned'
 
 echo "running python script for inference"
 python src/inference.py \
@@ -22,6 +22,7 @@ python src/inference.py \
     --batch_size 10 \
     --split ${split} \
     --output_file outputs/generated_captions_${model_type}_${split}.csv \
+    --no_quantization
     # --use_finetuned_model
 
 echo "finished inference"
