@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Job Name and User Config
-#SBATCH --job-name=blip2_finetune
+#SBATCH --job-name=val_no_quant_blip2_inference
 #SBATCH --mail-type=ALL
 ##SBATCH --mail-user=irisz1@uw.edu
 #SBATCH --mail-user=briggs3@uw.edu
@@ -14,7 +14,7 @@
 
 ## Resources
 #SBATCH --nodes=1
-#SBATCH --time=02-00:00:00  # Max runtime in DD-HH:MM:SS format.
+#SBATCH --time=02:00:00  # Max runtime in DD-HH:MM:SS format.
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
 #SBATCH --mem=64G
@@ -22,9 +22,9 @@
 
 # Directory
 #SBATCH --chdir=./
-#SBATCH --output=logs/finetune/log.out # where STDOUT goes
-#SBATCH --error=logs/finetune/log.err # where STDERR goes
+#SBATCH --output=logs/inference_no-quantization_val/log.out # where STDOUT goes
+#SBATCH --error=logs/inference_no-quantization_val/log.err # where STDERR goes
 
 
 ## Command(s) to run:
-./scripts/finetune.sh
+./scripts/inference.sh

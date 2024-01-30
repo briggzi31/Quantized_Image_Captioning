@@ -1,2 +1,4 @@
 data/*
 logs/*
+.DStore
+*/__pycache__/*
