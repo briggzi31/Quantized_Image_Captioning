@@ -1,5 +1,5 @@
 # Quantized_Image_Captioning
-This holds our work for the final project in CSE 493G
+This holds our work for the final project in CSE 493G. Our written paper can be found [here](https://github.com/briggzi31/Quantized_Image_Captioning/blob/main/Quantizing_Image_Captioning.pdf).
 
 ## Conda Environment Versioning
 
