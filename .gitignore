@@ -2,3 +2,4 @@ data/*
 logs/*
 .DStore
 */__pycache__/*
+*/.DS_Store
